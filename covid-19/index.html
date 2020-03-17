@@ -59,7 +59,7 @@
                 minZoom: 5.5,
                 maxZoom: 20,
                 ext: 'png'
-            }).addTo(map);
+            });
             
             var alidadeTile = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
                 minZoom: 5.5,
@@ -102,7 +102,7 @@
                     }
                     return(circlesLayerGroup);
                 });
-                L.control.layers({'Stamen':stamenTile, 'Alidade':alidadeTile}, 
+                L.control.layers({'Alidade':alidadeTile, 'Stamen':stamenTile}, 
                     {'Health facilities':layerGroups[0], 'By residence':layerGroups[1]},
                     {collapsed:false}).addTo(map);
             });
