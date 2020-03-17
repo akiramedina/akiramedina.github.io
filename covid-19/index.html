@@ -20,6 +20,20 @@
             h1, p {
                 margin: 30px;
             }
+            .leaflet-info, .leaflet-popup-content-wrapper {
+                width: 150px;
+                background: rgba(255,255,255,0.8);
+                padding: 5px;
+                border-radius: 5px;
+            }
+            .leaflet-popup-content {
+                margin: 0;
+                line-height: 1.2;
+            }
+            .leaflet-popup-tip {
+                background: rgba(255,255,255,0.8);
+            }
+            
         </style>
     </head>
     <body>
@@ -53,46 +67,44 @@
                 zoomDelta: 0.5
                 }).setView(initialCenter['center'], initialCenter['zoom']);
             
-            var stamenTile = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}{r}.{ext}', {
-                attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            var mainTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
                 subdomains: 'abcd',
-                minZoom: 5.5,
-                maxZoom: 20,
-                ext: 'png'
-            });
-            
-            var alidadeTile = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
-                minZoom: 5.5,
-                maxZoom: 20,
-                attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+                minZoom: 5,
+                maxZoom: 19,
             }).addTo(map);
+
+            
             
 
             d3.csv('data/covid-19 locations 20200317.csv').then(function(raw_data) {
+                // create scaling
+                var caseArray = raw_data.map(function(d){return parseInt(d['case_count'])})    
+                var radiusScale = d3.scaleLinear().domain([Math.min(...caseArray), Math.max(...caseArray)]).range([2.5,10])
+
                 var layerGroups = ['health_facility', 'residence'].map(function(location_filter) {
                     // filter for health_facility or residence data only
                     data = raw_data.filter(function(d) {
                         return (d['location_type']==location_filter && d['case_count'] > 0);
                     });
 
-                    // create scaling
-                    var caseArray = data.map(function(d){return parseInt(d['case_count'])})    
-                    var radiusScale = d3.scaleLinear().domain([Math.min(...caseArray), Math.max(...caseArray)]).range([2.5,10])
-                    
-                    
                     var circles = data.map(function(d) {
                         var circle = L.circleMarker([d['lat'],d['long']], {
                             color: 'red',
                             fillColor: '#f03',
                             fillOpacity: 0.25,
                             radius: radiusScale(d['case_count'])*currentScale
-                        }).bindPopup(d['location_name'] + ': ' + d['case_count']);
+                        });
+                        circle.bindPopup(
+                            '<b>' + d['location_name'] + '</b><br />' + d['case_count'] + ((d['case_count'] > 1) ? ' cases' : ' case')
+                        )
                         circle.on('mouseover', function(e) {
                             this.openPopup();
+                            
                         });
                         circle.on('mouseout', function(e) {
                             this.closePopup();
-                        })                  
+                        });            
                         return circle;
                     });
                     var circlesLayerGroup = L.layerGroup(circles);
@@ -100,11 +112,14 @@
                     if (location_filter=='health_facility') {
                         circlesLayerGroup.addTo(map);
                     }
+
                     return(circlesLayerGroup);
                 });
-                L.control.layers({'Alidade':alidadeTile, 'Stamen':stamenTile}, 
+                L.control.layers(null, 
                     {'Health facilities':layerGroups[0], 'By residence':layerGroups[1]},
-                    {collapsed:false}).addTo(map);
+                    {collapsed:true}).addTo(map);
+
+
             });
 
             
