@@ -9,6 +9,7 @@
         integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
         crossorigin=""></script>
         <script src="https://d3js.org/d3.v5.min.js"></script>
+        <script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
         <style>
             html, body {
                 margin: 0;
@@ -74,6 +75,52 @@
                 maxZoom: 19,
             }).addTo(map);
 
+            L.TopoJSON = L.GeoJSON.extend({
+                addData: function (data) {
+                var geojson, key;
+                if (data.type === "Topology") {
+                    for (key in data.objects) {
+                    if (data.objects.hasOwnProperty(key)) {
+                        geojson = topojson.feature(data, data.objects[key]);
+                        L.GeoJSON.prototype.addData.call(this, geojson);
+                    }
+                    }
+                    return this;
+                }
+                L.GeoJSON.prototype.addData.call(this, data);
+                return this;
+                }
+            });
+            L.topoJson = function (data, options) {
+                return new L.TopoJSON(data, options);
+            };
+            //create an empty geojson layer
+            //with a style and a popup on click
+            var geojson = L.topoJson(null, {
+                style: function(feature){
+                return {
+                    color: "#000",
+                    opacity: 1,
+                    weight: 1,
+                    fillColor: feature.properties.fillColor,
+                    fillOpacity: 0.4
+                }
+                },
+                onEachFeature: function(feature, layer) {
+                    if (feature.properties.NAME_1 !== 'Laguna Lake') {
+                        layer.bindPopup('<b>'+((feature.properties.NAME_1 === 'Metropolitan Manila') ? feature.properties.NAME_2 : feature.properties.NAME_1)+'</b><br />' + feature.properties.case_count + ' confirmed' + ((feature.properties.case_count != 1)? ' cases': ' case'));
+                    }                    
+                }
+            });
+            
+            //define a function to get and parse geojson from URL
+            async function getGeoData(url) {
+                let response = await fetch(url);
+                let data = await response.json();
+                console.log(data)
+                return data;
+            }
+
             
             
 
@@ -81,6 +128,7 @@
                 // create scaling
                 var caseArray = raw_data.map(function(d){return parseInt(d['case_count'])})    
                 var radiusScale = d3.scaleLinear().domain([Math.min(...caseArray), Math.max(...caseArray)]).range([2.5,10])
+                var colorScale = d3.scaleLinear().domain([Math.min(...caseArray), Math.max(...caseArray)]).range(['white', 'red']);
 
                 var layerGroups = ['health_facility', 'residence'].map(function(location_filter) {
                     // filter for health_facility or residence data only
@@ -115,8 +163,25 @@
 
                     return(circlesLayerGroup);
                 });
+
+                getGeoData('data/philippines-topo2.json').then(topodata => {
+                    topodata.objects.philippines.geometries.forEach(function(province) {
+                        
+                        var provinceFilter = (province.properties.NAME_1 === 'Metropolitan Manila') ? province.properties.NAME_2 : province.properties.NAME_1;
+                        var provinceCases = raw_data.filter(function(e) {
+                            return (e.location_type == 'residence_province' && provinceFilter == e.location_name)
+                        });
+                        if(provinceCases.length ==  1) {
+                            province.properties.case_count = provinceCases[0]['case_count'];
+                            province.properties.fillColor = colorScale(provinceCases[0]['case_count']);
+                        } else {
+                            province.properties.case_count = 0;
+                        }     
+                    })
+                    geojson.addData(topodata);
+                });
                 L.control.layers(null, 
-                    {'Health facilities':layerGroups[0], 'By residence':layerGroups[1]},
+                    {'Health facilities':layerGroups[0], 'By residence':layerGroups[1], 'By province':geojson},
                     {collapsed:true}).addTo(map);
 
 
