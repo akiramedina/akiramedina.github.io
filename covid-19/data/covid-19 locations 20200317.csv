@@ -1,0 +1,77 @@
+location_name,location_type,lat,long,case_count
+Ace Dumaguete Doctors Inc,health_facility,9.3174478,123.2962081,0
+Adventist Medical Center - Manila,health_facility,14.5557606,120.9954585,1
+Asian Hospital and Medical Center,health_facility,14.4134655,121.0435335,5
+Bataan St. Joseph Hospital and Medical Center,health_facility,14.6814952,120.541595,1
+Cardinal Santos Medical Center,health_facility,14.5977862,121.0455347,10
+Chinese General Hospital and Medical Center,health_facility,14.6256963,120.9884896,2
+Davao Regional Medical Center,health_facility,7.4212841,125.8288327,1
+Diliman Doctors Hospital,health_facility,14.6684416,121.0760803,4
+Dr. Jose N. Rodriguez Memorial Hospital and Sanitarium,health_facility,14.7661019,121.0633624,2
+East Avenue Medical Center,health_facility,14.6421672,121.0478702,1
+Fatima University Medical Center,health_facility,14.6780548,120.9802868,1
+Jose B. Lingad Memorial Regional Hospital,health_facility,15.034531,120.6846579,3
+Las Piñas General Hospital and Satellite Trauma Center,health_facility,14.4716706,120.973806,1
+Lorma Medical Center,health_facility,16.6315149,120.3178716,0
+Lung Center of the Philippines,health_facility,14.6472039,121.0458653,4
+Makati Medical Center,health_facility,14.5594041,121.014414,13
+Manila Doctors Hospital,health_facility,14.5820218,120.9826523,5
+Marikina Valley Medical Center,health_facility,14.6347295,121.1039907,2
+Northern Mindanao Medical Center,health_facility,8.4858824,124.6494494,1
+Ortigas Hospital and Health Care Center,health_facility,14.5857555,121.1178153,1
+Our Lady of Lourdes Hospital,health_facility,14.5949547,121.0225571,2
+Our Lady of Mt. Carmel Medical Center,health_facility,15.0960589,120.6243491,1
+Philippine Heart Center,health_facility,14.6440237,121.0481304,2
+Qualimed - Sta. Rosa Hospital,health_facility,14.2326603,121.0526422,1
+Quezon City Health Department (Reporting Facility),health_facility,14.6461516,121.0522997,2
+Quirino Memorial Medical Center,health_facility,14.6222558,121.0728482,2
+Research Institute for Tropical Medicine,health_facility,14.4099136,121.0371637,26
+Rizal Medical Center,health_facility,14.5642422,121.0659489,2
+San Juan de Dios Educational Foundation Inc. Hospital,health_facility,14.538517,120.99309,1
+San Lazaro Hospital,health_facility,14.6137701,120.9809964,12
+Silang Specialists Medical Center,health_facility,14.2346765,120.9728166,1
+St. Luke's Medical Center - Global City,health_facility,14.554928,121.048202,16
+St. Luke's Medical Center - Quezon City,health_facility,14.6225309,121.0232333,18
+Santa Ana Hospital,health_facility,14.5836328,121.0164213,3
+The Medical City - Ortigas,health_facility,14.5895426,121.0692699,23
+University of Sto. Tomas Hospital,health_facility,14.6114265,120.9902019,2
+University of the East Ramon Magsaysay Memorial Medical Center,health_facility,14.6069139,121.0203692,2
+Veterans Memorial Medical Center,health_facility,14.6561184,121.0400556,1
+RESU-NCR (Reporting Facility),health_facility,14.585333,121.03593,2
+Cotabato Regional and Medical Center,health_facility,7.200448,124.236274,1
+FEU - Dr. Nicanor Reyes Medical Foundation,health_facility,14.6986356,121.0671184,1
+Ilocos Training and Regional Medical Center,health_facility,16.5912333,120.3178371,1
+Makati Health Department,health_facility,14.5699766,121.0265194,2
+Medical Center Manila,health_facility,14.582445,120.985603,1
+Metropolitan Medical Center,health_facility,14.6096397,120.9784934,1
+Siliman University Medical Center,health_facility,9.3164808,123.3035823,1
+Victor R. Potenciano Medical Center,health_facility,14.5770225,121.0500827,2
+Antipolo City,residence,14.5861633,121.1759318,1
+Bataan,residence,14.6759667,120.527279,1
+Batangas,residence,13.765128,121.064226,2
+Bulacan,residence,14.856719,120.814568,3
+Caloocan,residence,14.6488664,120.9884525,2
+Camarines Sur,residence,13.5966857,123.2492093,1
+Cavite,residence,14.2798784,120.864752,4
+Davao de Oro,residence,7.5755018,125.9928346,1
+Laguna,residence,14.2766383,121.4172872,1
+Lanao del Sur,residence,8.0095939,124.2778743,1
+Las Pinas City,residence,14.4496701,120.9825933,2
+Lucena City,residence,13.94935612,121.629,1
+Makati City,residence,14.5546336,121.0156802,15
+Mandaluyong City,residence,14.5777334,121.0336589,5
+Manila,residence,14.6121619,120.9787303,8
+Marikina City,residence,14.6482098,121.1056509,6
+Muntinlupa City,residence,14.395036,121.044177,2
+Negros Oriental,residence,9.3129297,123.3021299,2
+Paranaque City,residence,14.4705872,121.0222712,5
+Pasay City,residence,14.543747,120.99492,1
+Pasig City,residence,14.5770795,121.0870273,8
+"Porac, Pampanga",residence,15.073387,120.540728,1
+Quezon City,residence,14.6517392,121.0489884,26
+Rizal,residence,14.5861472,121.1670703,6
+"San Fernando, Pampanga",residence,15.0278598,120.6937617,1
+"San Jose Del Monte, Bulacan",residence,14.8103348,121.0476944,1
+San Juan City,residence,14.6022849,121.0306215,18
+Taguig,residence,14.5288962,121.0677753,2
+Tarlac,residence,15.480361,120.5880749,1

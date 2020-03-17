@@ -1,0 +1,119 @@
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://static.rappler.com/cache/assets/1557569470-2d523a8530817b46443618220132ae19.css" type="text/css" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+        crossorigin=""/>
+        <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+        integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+        crossorigin=""></script>
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+        <style>
+            html, body {
+                margin: 0;
+            }
+            #map {
+                width: 100vw;
+                height: 600;
+            }
+            h1, p {
+                margin: 30px;
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+            <h1 class="select-headline">Covid-19 cases map</h1>
+        </div>
+        
+        <div id='map'>
+        </div>
+        <script>
+            
+            var currentScale = 2.5;
+
+            if(document.documentElement.clientWidth < 768) {
+                var initialCenter = {
+                    center: [14.585211804919707,121.03214996983299],
+                    zoom: 10
+                };
+            } else {
+                var initialCenter = {
+                    center: [14.4724735,121.0511779],
+                    zoom: 10
+                };
+            }
+
+
+            var map = L.map('map',{
+                boxZoom: false,
+                scrollWheelZoom: false,
+                zoomSnap: 0.5,
+                zoomDelta: 0.5
+                }).setView(initialCenter['center'], initialCenter['zoom']);
+            
+            var stamenTile = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}{r}.{ext}', {
+                attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                subdomains: 'abcd',
+                minZoom: 5.5,
+                maxZoom: 20,
+                ext: 'png'
+            }).addTo(map);
+            
+            var alidadeTile = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
+                minZoom: 5.5,
+                maxZoom: 20,
+                attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+
+            d3.csv('data/covid-19 locations 20200317.csv').then(function(raw_data) {
+                var layerGroups = ['health_facility', 'residence'].map(function(location_filter) {
+                    // filter for health_facility or residence data only
+                    data = raw_data.filter(function(d) {
+                        return (d['location_type']==location_filter && d['case_count'] > 0);
+                    });
+
+                    // create scaling
+                    var caseArray = data.map(function(d){return parseInt(d['case_count'])})    
+                    var radiusScale = d3.scaleLinear().domain([Math.min(...caseArray), Math.max(...caseArray)]).range([2.5,10])
+                    
+                    
+                    var circles = data.map(function(d) {
+                        var circle = L.circleMarker([d['lat'],d['long']], {
+                            color: 'red',
+                            fillColor: '#f03',
+                            fillOpacity: 0.25,
+                            radius: radiusScale(d['case_count'])*currentScale
+                        }).bindPopup(d['location_name'] + ': ' + d['case_count']);
+                        circle.on('mouseover', function(e) {
+                            this.openPopup();
+                        });
+                        circle.on('mouseout', function(e) {
+                            this.closePopup();
+                        })                  
+                        return circle;
+                    });
+                    var circlesLayerGroup = L.layerGroup(circles);
+                    
+                    if (location_filter=='health_facility') {
+                        circlesLayerGroup.addTo(map);
+                    }
+                    return(circlesLayerGroup);
+                });
+                L.control.layers({'Stamen':stamenTile, 'Alidade':alidadeTile}, 
+                    {'Health facilities':layerGroups[0], 'By residence':layerGroups[1]},
+                    {collapsed:false}).addTo(map);
+            });
+
+            
+
+
+        
+        </script>
+
+
+    </body>
+    
+</html>
