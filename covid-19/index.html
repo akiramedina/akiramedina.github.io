@@ -40,6 +40,7 @@
     <body>
         <div>
             <h1 class="select-headline">Covid-19 cases map</h1>
+            <p>As of 12:00 PM, March 18, 2020</p>
         </div>
         
         <div id='map'>
@@ -47,6 +48,7 @@
         <script>
             
             var currentScale = 2.5;
+            var locationsFilename = 'data/covid-19 locations 20200318.csv';
 
             if(document.documentElement.clientWidth < 768) {
                 var initialCenter = {
@@ -124,7 +126,7 @@
             
             
 
-            d3.csv('data/covid-19 locations 20200317.csv').then(function(raw_data) {
+            d3.csv(locationsFilename).then(function(raw_data) {
                 // create scaling
                 var caseArray = raw_data.map(function(d){return parseInt(d['case_count'])})    
                 var radiusScale = d3.scaleLinear().domain([Math.min(...caseArray), Math.max(...caseArray)]).range([2.5,10])
