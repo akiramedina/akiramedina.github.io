@@ -52,14 +52,40 @@
             <p>As of 12:00 PM, March 18, 2020</p>
         </div>
         
-        <h2>By health facility</h2>
-        <div id='map-health-facility'></div>
-        <br />
-        <h2>By residence</h2>
-        <div id='map-residence-dot'></div>
-        <br />
-        <h2>By province</h2>
-        <div id='map-residence-choropleth'></div>
+        <div class="main-wrapper">
+            <h2>By health facility</h2>
+            <div id='map-health-facility'></div>
+            <div>
+                <button class="support-button" onclick="zoomButton(map, 'ph')">PH</button>
+                <button class="support-button" onclick="zoomButton(map, 'mm')">Metro Manila</button>
+                <button class="support-button" onclick="zoomButton(map, 'l')">Luzon</button>
+                <button class="support-button" onclick="zoomButton(map, 'v')">Visayas</button>
+                <button class="support-button" onclick="zoomButton(map, 'm')">Mindanao</button>
+                
+            </div>
+            <div id="health-facility-selector"></div>
+            <br />
+            <h2>By residence</h2>
+            <div id='map-residence-dot'></div>
+            <div>
+                <button class="support-button" onclick="zoomButton(map2, 'ph')">PH</button>
+                <button class="support-button" onclick="zoomButton(map2, 'mm')">Metro Manila</button>
+                <button class="support-button" onclick="zoomButton(map2, 'l')">Luzon</button>
+                <button class="support-button" onclick="zoomButton(map2, 'v')">Visayas</button>
+                <button class="support-button" onclick="zoomButton(map2, 'm')">Mindanao</button>
+            </div>
+            <div id="residence-selector"></div>
+            <br />
+            <h2>By province</h2>
+            <div id='map-residence-choropleth'></div>
+            <div>
+                <button class="support-button" onclick="zoomButton(map3, 'ph')">PH</button>
+                <button class="support-button" onclick="zoomButton(map3, 'mm')">Metro Manila</button>
+                <button class="support-button" onclick="zoomButton(map3, 'l')">Luzon</button>
+                <button class="support-button" onclick="zoomButton(map3, 'v')">Visayas</button>
+                <button class="support-button" onclick="zoomButton(map3, 'm')">Mindanao</button>
+            </div>
+        </div>
         <script>
             
             // define google sheet endpoint
@@ -69,15 +95,37 @@
             var currentScale = 2;
             if(document.documentElement.clientWidth < 768) {
                 var initialCenter = {
-                    center: [14.585211804919707,121.03214996983299],
-                    zoom: 10
+                    center: [12.189703804004086,121.92626953125001],
+                    zoom: 6
                 };
             } else {
                 var initialCenter = {
-                    center: [14.4724735,121.0511779],
-                    zoom: 10
+                    center: [12.189703804004086,121.92626953125001],
+                    zoom: 6
                 };
             }
+
+            var zoomLevels = {
+                'mm': {
+                    center: [14.586310013444916,121.03953699348496],
+                    zoom: 11
+                },
+                'l': {
+                    center: [15.010965337006542,122.04446953721346],
+                    zoom: 7
+                },
+                'v': {
+                    center: [10.980826889805323,123.8063724897802],
+                    zoom: 7
+                },
+                'm': {
+                    center: [7.314139953579333,124.31176780723037],
+                    zoom:7
+                },
+                'ph': initialCenter
+            }
+
+            
 
             const mapOptions = {
                 boxZoom: false,
@@ -90,7 +138,10 @@
             var map = L.map('map-health-facility',mapOptions).setView(initialCenter['center'], initialCenter['zoom']);
             var map2 = L.map('map-residence-dot',mapOptions).setView(initialCenter['center'], initialCenter['zoom']);
             var map3 = L.map('map-residence-choropleth',mapOptions).setView(initialCenter['center'], initialCenter['zoom']);
-            
+
+            function zoomButton(map, zoomLevel) {
+                map.setView(zoomLevels[zoomLevel]['center'], zoomLevels[zoomLevel]['zoom']);
+            }
             // add carto map
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -176,8 +227,10 @@
             }
 
             function createCircleMarkers(data) {
-                let caseArray = data.map(function(d){return d['case_count']}) 
-                var radiusScale = d3.scaleLinear().domain([Math.min(...caseArray), Math.max(...caseArray)]).range([2.5,10])
+                // let caseArray = data.map(function(d){return d['case_count']}) 
+                let caseRange = d3.extent(data.map(function(d){return d['case_count']}));
+                // var radiusScale = d3.scaleLinear().domain([Math.min(...caseArray), Math.max(...caseArray)]).range([2.5,10])
+                var radiusScale = d3.scaleLinear().domain([1, caseRange[1]]).range([2.5,10])
                 let circles = data.filter(function(d){
                     return (d['case_count'] > 0);
                 }).map(function(d) {
@@ -201,7 +254,27 @@
                 let circlesLayerGroup = L.layerGroup(circles);
                 return(circlesLayerGroup);
             }
-            
+
+            function createSelectEntry(name, lat, lon, map) {
+                // return '<option value="' + name + '"">' + name + "</option>"
+                var optn = document.createElement('option');
+                optn.text = name;
+                optn.value = lat+','+lon;                
+                return optn
+            }
+
+            function createSelector(data,map,zoom) {
+                var selectHtml = document.createElement('select');
+                data.forEach(function(d) {
+                    if(d.case_count > 0) {
+                        selectHtml.appendChild(createSelectEntry(d.location_name, d.lat, d.long, map));
+                    }                    
+                });
+                selectHtml.onchange = function() {
+                    map.setView(this.value.split(','), zoom);
+                }
+                return selectHtml;
+            }            
 
             getLocationData(sheetEndpoint).then(function(data) {
 
@@ -209,12 +282,18 @@
                     return(d['location_type']=='health_facility')
                 });
                 let healthFacilityLayer = createCircleMarkers(healthFacility).addTo(map);
+                
+                let healthFacilitySelector = createSelector(healthFacility, map, 13.5);
+                document.getElementById('health-facility-selector').appendChild(healthFacilitySelector);
+                // console.log(selectHtml);
 
 
                 let residence = data.filter(function(d) {
                     return(d['location_type']=='residence')
                 });
                 let residenceLayer = createCircleMarkers(residence).addTo(map2);
+                let residenceSelector = createSelector(residence, map2, 10);
+                document.getElementById('residence-selector').appendChild(residenceSelector);
                 
                 // create topo layer
                 
@@ -224,7 +303,7 @@
                     }).map(function(d) {
                         return(d['case_count']);
                     })
-                    var colorScale = d3.scaleLinear().domain([Math.min(...caseArray), Math.max(...caseArray)]).range(['white', '#C05133']);
+                    var colorScale = d3.scaleLinear().domain([1, Math.max(...caseArray)]).range(['white', '#C05133']);
 
                     topodata.objects.philippines.geometries.forEach(function(province) {
                         
