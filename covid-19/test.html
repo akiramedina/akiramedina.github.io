@@ -1,0 +1,166 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://static.rappler.com/cache/assets/1557569470-2d523a8530817b46443618220132ae19.css" type="text/css" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+        crossorigin=""/>
+        <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+        integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+        crossorigin=""></script>
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+        <script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <style>#map-health-facility, #map-residence-dot, #map-frame {
+            width: 640;
+            height: 600;
+            margin: auto;
+        }
+        @media only screen and (max-width: 768px) {
+        /* For mobile phones: */
+            #map-health-facility, #map-residence-dot {
+                width: 100%;
+            }
+        }</style>
+</head>
+<body>
+    <div id='map-residence-dot'></div>
+<button class="support-button" onclick="zoomButton(map2, 'ph')">PH</button>
+<button class="support-button" onclick="zoomButton(map2, 'mm')">Metro Manila</button>
+<button class="support-button" onclick="zoomButton(map2, 'l')">Luzon</button>
+<button class="support-button" onclick="zoomButton(map2, 'v')">Visayas</button>
+<button class="support-button" onclick="zoomButton(map2, 'm')">Mindanao</button>
+
+<div id='map-health-facility'></div>
+<button class="support-button" onclick="zoomButton(map, 'ph')">PH</button>
+<button class="support-button" onclick="zoomButton(map, 'mm')">Metro Manila</button>
+<button class="support-button" onclick="zoomButton(map, 'l')">Luzon</button>
+<button class="support-button" onclick="zoomButton(map, 'v')">Visayas</button>
+<button class="support-button" onclick="zoomButton(map, 'm')">Mindanao</button>
+
+
+
+<iframe src="https://akiramedina.github.io/covid-19" id="map-frame"></iframe>
+
+<script>
+            
+    // define google sheet endpoint
+    const sheetEndpoint = 'https://spreadsheets.google.com/feeds/list/17szfYeRHZumfbiuKov7vmdyFWg9zEnyLv3WVkJSAWNs/1/public/values?alt=json';
+
+    // initial map view
+    var currentScale = 2;
+
+    var initialCenter = {
+            center: [12.189703804004086,121.92626953125001],
+            zoom: 6
+    };
+
+    var zoomLevels = {
+        'mm': {
+            center: [14.586310013444916,121.03953699348496],
+            zoom: 11
+        },
+        'l': {
+            center: [15.010965337006542,122.04446953721346],
+            zoom: 7
+        },
+        'v': {
+            center: [10.980826889805323,123.8063724897802],
+            zoom: 7
+        },
+        'm': {
+            center: [7.314139953579333,124.31176780723037],
+            zoom:7
+        },
+        'ph': initialCenter
+    }
+
+    const mapOptions = {
+        boxZoom: false,
+        scrollWheelZoom: false,
+        zoomSnap: 0.5,
+        zoomDelta: 0.5
+    };
+
+    // define map
+    var map = L.map('map-health-facility',mapOptions).setView(initialCenter['center'], initialCenter['zoom']);
+    var map2 = L.map('map-residence-dot',mapOptions).setView(initialCenter['center'], initialCenter['zoom']);
+    
+    function zoomButton(map, zoomLevel) {
+        map.setView(zoomLevels[zoomLevel]['center'], zoomLevels[zoomLevel]['zoom']);
+    }
+    // add carto map
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a> | Data from <a href="https://www.doh.gov.ph/2019-nCov">DOH</a>',
+        subdomains: 'abcd',
+        minZoom: 5,
+        maxZoom: 19,
+    }).addTo(map);
+    
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a> | Data from <a href="https://www.doh.gov.ph/2019-nCov">DOH</a>',
+        subdomains: 'abcd',
+        minZoom: 5,
+        maxZoom: 19,
+    }).addTo(map2);
+
+    //define a function to get and parse google sheets data from URL
+    async function getLocationData(url) {
+        let response = await $.getJSON(url);
+        let out = await response.feed.entry.map(function(d) {
+                var entry = {
+                    location_type:d.gsx$locationtype.$t,
+                    location_name:d.gsx$locationname.$t,
+                    lat:d.gsx$lat.$t,
+                    long:d.gsx$long.$t,
+                    case_count:parseInt(d.gsx$casecount.$t),
+                    travel_history:d.gsx$travelhistory.$t
+                }
+                return(entry); 
+        });    
+        return(out);
+    }
+
+    function createCircleMarkers(data) {
+        // let caseArray = data.map(function(d){return d['case_count']}) 
+        let caseRange = d3.extent(data.map(function(d){return d['case_count']}));
+        // var radiusScale = d3.scaleLinear().domain([Math.min(...caseArray), Math.max(...caseArray)]).range([2.5,10])
+        var radiusScale = d3.scaleLinear().domain([1, caseRange[1]]).range([2.5,10])
+        let circles = data.filter(function(d){
+            return (d['case_count'] > 0);
+        }).map(function(d) {
+            var circle = L.circleMarker([d['lat'], d['long']], {
+                color: '#C05133',
+                fillColor: '#C05133',
+                fillOpacity: 0.25,
+                radius: radiusScale(d['case_count'])*currentScale
+            });
+            let popupText = '<b>' + d['location_name'] + '</b><br />' + d['case_count'] + ((d['case_count'] > 1) ? ' cases' : ' case');
+            if(d['travel_history']!='') { popupText += ('<br/ >Travel history:<br/ >' + d['travel_history'].replace(/,/g,'<br />'))}
+            circle.bindPopup(popupText);
+            circle.on('mouseover', function(e) {
+                this.openPopup();    
+            });
+            circle.on('mouseout', function(e) {
+                this.closePopup();
+            });            
+            return circle;
+        });
+        let circlesLayerGroup = L.layerGroup(circles);
+        return(circlesLayerGroup);
+    }
+    getLocationData(sheetEndpoint).then(function(data) {
+        let healthFacility = data.filter(function(d) {
+            return(d['location_type']=='health_facility')
+        });
+        let healthFacilityLayer = createCircleMarkers(healthFacility).addTo(map);
+        let residence = data.filter(function(d) {
+            return(d['location_type']=='residence')
+        });
+        let residenceLayer = createCircleMarkers(residence).addTo(map2);
+    });
+</script>
+</body>
+
+
+</html>

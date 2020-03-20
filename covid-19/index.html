@@ -18,7 +18,7 @@
             h1, h2, p {
                 margin: 30px;
             }
-            #map-health-facility, #map-residence-dot, #map-residence-choropleth, #map {
+            #map-health-facility, #map-residence-dot {
                 width: 640;
                 height: 600;
                 margin: auto;
@@ -89,21 +89,14 @@
         <script>
             
             // define google sheet endpoint
-            const sheetEndpoint = 'https://spreadsheets.google.com/feeds/list/1umqRofMoEVT_dS0qRTwHpqJBoiPlV8IGmBIyhJR2YDg/1/public/values?alt=json';
-
+            const sheetEndpoint = 'https://spreadsheets.google.com/feeds/list/17szfYeRHZumfbiuKov7vmdyFWg9zEnyLv3WVkJSAWNs/1/public/values?alt=json';
             // initial map view
             var currentScale = 2;
-            if(document.documentElement.clientWidth < 768) {
-                var initialCenter = {
+
+            var initialCenter = {
                     center: [12.189703804004086,121.92626953125001],
                     zoom: 6
-                };
-            } else {
-                var initialCenter = {
-                    center: [12.189703804004086,121.92626953125001],
-                    zoom: 6
-                };
-            }
+            };
 
             var zoomLevels = {
                 'mm': {
@@ -125,8 +118,6 @@
                 'ph': initialCenter
             }
 
-            
-
             const mapOptions = {
                 boxZoom: false,
                 scrollWheelZoom: false,
@@ -144,21 +135,21 @@
             }
             // add carto map
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a> | Data from <a href="https://www.doh.gov.ph/2019-nCov">DOH</a>',
                 subdomains: 'abcd',
                 minZoom: 5,
                 maxZoom: 19,
             }).addTo(map);
             
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a> | Data from <a href="https://www.doh.gov.ph/2019-nCov">DOH</a>',
                 subdomains: 'abcd',
                 minZoom: 5,
                 maxZoom: 19,
             }).addTo(map2);
 
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>; Province topology from <a href="https://github.com/thinkingmachines/cartogramph/">Thinking Machines/CartogramPH</a>',
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a> | Province topology from <a href="https://github.com/thinkingmachines/cartogramph/">Thinking Machines/CartogramPH</a>',
                 subdomains: 'abcd',
                 minZoom: 5,
                 maxZoom: 19,
@@ -219,7 +210,8 @@
                             location_name:d.gsx$locationname.$t,
                             lat:d.gsx$lat.$t,
                             long:d.gsx$long.$t,
-                            case_count:parseInt(d.gsx$casecount.$t)
+                            case_count:parseInt(d.gsx$casecount.$t),
+                            travel_history:d.gsx$travelhistory.$t
                         }
                         return(entry); 
                 });    
@@ -240,9 +232,9 @@
                         fillOpacity: 0.25,
                         radius: radiusScale(d['case_count'])*currentScale
                     });
-                    circle.bindPopup(
-                            '<b>' + d['location_name'] + '</b><br />' + d['case_count'] + ((d['case_count'] > 1) ? ' cases' : ' case')
-                    );
+                    let popupText = '<b>' + d['location_name'] + '</b><br />' + d['case_count'] + ((d['case_count'] > 1) ? ' cases' : ' case');
+                    if(d['travel_history']!='') { popupText += ('<br/ >Travel history:<br/ >' + d['travel_history'].replace(/,/g,'<br />'))}
+                    circle.bindPopup(popupText);
                     circle.on('mouseover', function(e) {
                         this.openPopup();    
                     });
